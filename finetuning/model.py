@@ -12,12 +12,9 @@ class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-        net = models.vgg16(pretrained=True)
-        self.fc2 = nn.Linear(4096, 8)
+        self.net = models.vgg16(pretrained=True)
+        self.net.classifier[6] = nn.Linear(4096, 8)
 
     def forward(self, x):
         x = self.net(x)
-        x = self.fc2(x)
         return x
-
-
