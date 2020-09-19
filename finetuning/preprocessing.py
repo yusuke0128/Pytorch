@@ -22,9 +22,9 @@ class Preprocessing:
 
     def set_transform(self):
         self._transform = transforms.Compose([
+            transforms.RandomResizedCrop(160, scale=(1.0, 1.0), ratio=(1.0, 1.0)),
             transforms.ToTensor(),
-            transforms.Resize(244, 244),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize((0.5,), (0.5,)),
             ]
         )
 

@@ -12,8 +12,6 @@ from sklearn.model_selection import train_test_split
 from model import Net
 import preprocessing
 
-from finetuning import preprocessing
-
 
 class Train:
     _device = None
@@ -43,14 +41,16 @@ class Train:
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._net = Net().to(self._device)
         self._optimizer = optim.Adam(self._net.parameters(), lr=0.02)
-        self._criterion = nn.MSELoss()
+        self._criterion = nn.CrossEntropyLoss()
         self._path = "/Users/yusuke/dataset/best-artworks-of-all-time/images/images"
         dataset = datasets.ImageFolder(root=self._path, transform=d.get_transform())
-        train_id, val_id = train_test_split(list(range(len(dataset))), test_size=0.2)
-        self._train_dataset = utilsdata.Subset(dataset, train_id)
-        self._val_dataset = utilsdata.Subset(dataset, val_id)
-        self._train_loder = utilsdata.DataLoader(dataset=self._train_dataset, batch_size=100, shuffle=True, num_workers=3)
-        self._val_loader = utilsdata.DataLoader(dataset=self._val_dataset, batch_size=100, shuffle=True, num_workers=3)
+
+        print(self._net)
+        #train_id, val_id = train_test_split(list(range(len(dataset))), test_size=0.2)
+        #self._train_dataset = utilsdata.Subset(dataset, train_id)
+        #self._val_dataset = utilsdata.Subset(dataset, val_id)
+        self._train_loader = utilsdata.DataLoader(dataset=dataset, batch_size=100, shuffle=True)
+        self._val_loader = utilsdata.DataLoader(dataset=dataset, batch_size=100, shuffle=True)
 
     # def set_configfile(self, arg):
 
@@ -60,15 +60,17 @@ class Train:
 
         self._net.train()
 
-        for i, (inputs, labels) in enumerate(self._train_loder):
-            outputs = self.net(inputs)
-            loss = self._criterion(outputs, labels)
+        for i, (inputs, labels) in enumerate(self._train_loader):
+            print(i)
             self._optimizer.zero_grad()
+            outputs = self._net(inputs)
+            print(labels[50])
+            loss = self._criterion(outputs, labels)
             loss.backward()
             self._optimizer.step()
             self._train_loss += loss.item()
 
-        self._train_loss = self._train_loss / len(self._train_loder)
+        self._train_loss = self._train_loss / len(self._train_loader)
 
         return self._train_loss
 
@@ -82,7 +84,7 @@ class Train:
 
                 outputs = self.net(inputs)
                 loss = self._criterion(outputs, labels)
-                if outputs == labels:
+                if nn.argmax(outputs) == labels:
                     self._val_acc += 1
 
                 self._val_loss += loss.item()
